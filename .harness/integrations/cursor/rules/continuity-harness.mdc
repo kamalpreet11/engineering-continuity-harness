@@ -1,0 +1,24 @@
+---
+description: Engineering Continuity Harness — plan-first, current-only docs, branch-per-plan
+alwaysApply: true
+---
+
+This project is governed by the Engineering Continuity Harness. The engine is in `.harness/`.
+
+Read and follow @.harness/rules/RULES.md before doing anything.
+
+Detailed instructions:
+@.harness/instructions/planning.md
+@.harness/instructions/knowledge.md
+@.harness/instructions/git.md
+@.harness/instructions/writing-style.md
+
+The short version:
+
+- Plan before you work. Plans live in `docs/plans/` as `PLAN-<name>.html`. No project code changes without an active plan on a matching `plan/<name>` branch.
+- Resolved plans (implemented, abandoned, superseded) are locked forever. Open a new plan to revisit.
+- Concepts, decisions, and specs in `docs/` describe the present only. No history.
+- Never commit on main. Branch per plan. Rebase to main, tag releases.
+- Plain English everywhere. No AI fluff. No commit attributions.
+
+Hooks in `.cursor/hooks.json` enforce the hard rules. Do not work around them.

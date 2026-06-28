@@ -1,0 +1,85 @@
+<!--HARNESS
+type: plan
+name: harness-bootstrap
+created: 2026-06-28
+state: created
+description: Stand up the full Engineering Continuity Harness — engine, hooks, docs, and installer.
+keywords: harness | bootstrap | planning | hooks | index | continuity | installer | npx
+branch: plan/harness-bootstrap
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan — harness-bootstrap</title>
+<style>
+  :root { --ink:#1a1a1a; --muted:#666; --line:#e3e3e3; --bg:#fafafa; --accent:#2563eb; }
+  * { box-sizing: border-box; }
+  body { font: 16px/1.6 -apple-system, system-ui, Segoe UI, Roboto, sans-serif; color: var(--ink); background: var(--bg); margin: 0; }
+  main { max-width: 820px; margin: 0 auto; padding: 48px 24px 96px; }
+  .meta { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 20px 24px; margin-bottom: 32px; }
+  .meta h1 { margin: 0 0 6px; font-size: 26px; }
+  .meta .desc { color: var(--muted); margin: 0 0 16px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .badge { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: .03em; }
+  .state-created { background: #dbeafe; color: #1e40af; }
+  .state-implemented { background: #dcfce7; color: #166534; }
+  .state-abandoned { background: #fee2e2; color: #991b1b; }
+  .state-superseded { background: #fef3c7; color: #92400e; }
+  .kw { background: #f1f1f1; color: #444; font-size: 12px; padding: 3px 8px; border-radius: 6px; }
+  .dates { color: var(--muted); font-size: 13px; margin-top: 12px; }
+  h2 { font-size: 19px; margin-top: 36px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  a { color: var(--accent); }
+  code { background: #f1f1f1; padding: 1px 5px; border-radius: 4px; font-size: 14px; }
+  ul { padding-left: 20px; }
+  .back { display: inline-block; margin-bottom: 24px; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./index.html">&larr; All plans</a>
+
+  <div class="meta">
+    <h1>Bootstrap the Engineering Continuity Harness</h1>
+    <p class="desc">Stand up the full harness: engine, hooks, knowledge docs, and the npx installer.</p>
+    <div class="badges">
+      <span class="badge state-created">created</span>
+      <span class="kw">harness</span>
+      <span class="kw">bootstrap</span>
+      <span class="kw">hooks</span>
+      <span class="kw">installer</span>
+    </div>
+    <div class="dates">Created 2026-06-28</div>
+  </div>
+
+  <h2>Context</h2>
+  <p>This project is a coding-agent-agnostic harness. It keeps agents like Claude disciplined and keeps a project's history and knowledge readable by humans over time. This first plan builds the whole system, and the harness records its own creation as its first plan.</p>
+
+  <h2>Approach</h2>
+  <p>Two halves: <code>.harness/</code> is the engine and ships with the installer; <code>docs/</code> is the project's own output and is never shipped. The <code>.claude/</code> folder is a thin pointer plus hook wiring.</p>
+  <ul>
+    <li>Rules and instructions in <code>.harness/rules</code> and <code>.harness/instructions</code>.</li>
+    <li>HTML templates for plans, concepts, decisions, specs.</li>
+    <li>A Node index generator that builds the master hub and the plan navigator.</li>
+    <li>Four hooks: inject rules at session start, lock resolved plans and require a plan before code, keep work off main, and rebuild the index when docs change.</li>
+    <li>An npx installer with <code>init</code> and <code>update</code>.</li>
+  </ul>
+
+  <h2>Files</h2>
+  <ul>
+    <li><code>.harness/</code> — README, rules, instructions, templates, bin (build-index, hooks, libs).</li>
+    <li><code>.claude/CLAUDE.md</code>, <code>.claude/settings.json</code>.</li>
+    <li><code>package.json</code>, <code>bin/cli.mjs</code>.</li>
+    <li><code>docs/</code> — generated indexes and this plan.</li>
+  </ul>
+
+  <h2>Verification</h2>
+  <ul>
+    <li>Run the index generator and open <code>docs/index.html</code> and <code>docs/plans/index.html</code>.</li>
+    <li>Pipe sample hook payloads into each hook and confirm allow/deny behavior.</li>
+    <li>Run the installer into a scratch directory and confirm the engine lands and docs are created.</li>
+  </ul>
+</main>
+</body>
+</html>

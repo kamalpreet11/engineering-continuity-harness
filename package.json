@@ -1,0 +1,28 @@
+{
+  "name": "continuity-harness",
+  "version": "0.1.0",
+  "description": "Coding-agent-agnostic harness that keeps agents disciplined and project knowledge readable.",
+  "type": "module",
+  "bin": {
+    "continuity-harness": "bin/cli.mjs"
+  },
+  "files": [
+    ".harness/",
+    "bin/cli.mjs"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SkylonTech/engineering-continuity-harness.git"
+  },
+  "keywords": [
+    "claude",
+    "coding-agent",
+    "harness",
+    "planning",
+    "hooks"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      { "command": "node .harness/bin/hooks/cursor/guard.mjs" }
+    ],
+    "preToolUse": [
+      { "command": "node .harness/bin/hooks/cursor/guard.mjs" }
+    ],
+    "afterFileEdit": [
+      { "command": "node .harness/bin/hooks/rebuild-index.mjs" }
+    ]
+  }
+}
