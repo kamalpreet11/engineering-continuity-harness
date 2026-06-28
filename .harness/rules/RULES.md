@@ -37,8 +37,9 @@ These rules are not optional. Hooks enforce the hard ones. Follow all of them.
 - When work is verified, rebase onto main (never merge), then tag.
 - Ask the user whether the work is a meaningful release. If yes, tag it with a semver bump (major, minor, or patch).
 
-## 7. Commits are short and plain
+## 7. Commits follow Conventional Commits
 
-- Commit messages read like one or two text messages. Plain English.
-- Zero AI fluff. Zero attributions. No "Co-authored-by", no tool credits.
+- Subject line is `<type>: summary` or `<type>(scope): summary`. Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert.
+- Keep the subject under 72 characters, imperative, plain English. Add a body for context when it helps.
+- Zero AI fluff. Zero attributions. No "Co-Authored-By", no "Generated with", no tool credits. (Hook-enforced by the git commit-msg hook.)
 - Do not nag the user to commit. When work is done, remind them to review and commit when ready.

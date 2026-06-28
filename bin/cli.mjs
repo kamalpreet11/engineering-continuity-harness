@@ -8,7 +8,7 @@
 // wired from documented hook schemas and are untested — verify on first use).
 
 import {
-  existsSync, mkdirSync, writeFileSync, readFileSync, appendFileSync, cpSync, copyFileSync,
+  existsSync, mkdirSync, writeFileSync, readFileSync, appendFileSync, cpSync, copyFileSync, chmodSync,
 } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -93,6 +93,38 @@ function copyEngine() {
   cpSync(join(pkgRoot, ".harness"), join(target, ".harness"), { recursive: true, force: true });
 }
 
+function gitConfigGet(key, cwd) {
+  try {
+    return execFileSync("git", ["config", "--local", "--get", key], {
+      cwd, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return "";
+  }
+}
+
+// Point git at our versioned hook so every commit (any agent, or a human) is
+// checked against Conventional Commits. Agent-agnostic, so it lives here, not
+// in a per-agent integrator.
+function wireGitHooks(t) {
+  if (!existsSync(join(t, ".git"))) {
+    warn("not a git repo yet — run `git init`, then `continuity-harness update` to wire the commit-msg hook.");
+    return;
+  }
+  try { chmodSync(join(t, ".harness", "githooks", "commit-msg"), 0o755); } catch {}
+  const current = gitConfigGet("core.hooksPath", t);
+  if (current && current !== ".harness/githooks") {
+    warn(`core.hooksPath is already "${current}". Left as-is — call .harness/githooks/commit-msg from your hook to keep the commit check.`);
+    return;
+  }
+  try {
+    execFileSync("git", ["config", "--local", "core.hooksPath", ".harness/githooks"], { cwd: t, stdio: "ignore" });
+    log("  commit-msg hook wired — commits must follow Conventional Commits");
+  } catch {
+    warn("could not set core.hooksPath. Run: git config core.hooksPath .harness/githooks");
+  }
+}
+
 function createDocsDirs() {
   for (const d of DOC_DIRS) {
     const full = join(target, "docs", d);
@@ -155,6 +187,7 @@ function init(args) {
   copyEngine();
   createDocsDirs();
   wire(agents);
+  wireGitHooks(target);
   writeManifest(agents);
   buildIndexes();
   log("");
@@ -174,6 +207,7 @@ function update(args) {
     if (agents.length === 0) log("No agents recorded; refreshing the engine only.");
   }
   copyEngine();
+  wireGitHooks(target);
   if (agents.length) {
     wire(agents);
     writeManifest([...readManifest().agents, ...agents]);

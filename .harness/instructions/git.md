@@ -9,20 +9,28 @@
 ## Commits
 
 - Do not nag the user to commit. When a unit of work is done and verified, remind them to review the changes and commit when they are ready.
-- Commit messages are short. One or two sentences, like a text message. Plain English.
-- Zero AI fluff. Zero attributions. No "Co-authored-by" line, no tool credits, no emoji padding.
+- Use **Conventional Commits**. Subject: `<type>: summary` or `<type>(scope): summary`.
+- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
+- Subject under 72 characters, imperative, plain English. Add a body for context when useful.
+- Zero AI fluff. Zero attributions. No "Co-Authored-By" line, no "Generated with", no emoji padding.
+- The git commit-msg hook (`.harness/githooks/commit-msg`) blocks anything that does not match.
 
 Good:
 ```
-Add social login with Google and Facebook.
-Wire the callback route and store the provider token.
+feat: add social login with google and facebook
+```
+```
+fix(auth): refresh the provider token on callback
+
+The token expired before the redirect completed, so the first
+call after login failed. Refresh it in the callback handler.
 ```
 
 Bad:
 ```
-feat: implement comprehensive OAuth2 authentication solution 🚀
+implemented comprehensive OAuth2 authentication solution 🚀
 
-Co-authored-by: ...
+Co-Authored-By: ...
 ```
 
 ## Bringing work to main
@@ -37,10 +45,11 @@ When the plan's work is verified:
 2. Mark the plan `implemented` (add `implemented: <date>`). This is the plan's final edit.
 3. Ask the user: **is this a meaningful release?**
    - If no, stop. The work is on main, tagged by nothing.
-   - If yes, tag it with a semver bump. Ask which level:
-     - `major` — breaking change.
-     - `minor` — new feature, backward compatible.
-     - `patch` — fix or small change.
+   - If yes, tag it with a semver bump. The commit types suggest the level:
+     - `major` — a `!` or `BREAKING CHANGE` footer in the work.
+     - `minor` — `feat` commits, backward compatible.
+     - `patch` — `fix` and the rest.
+   - Confirm the level with the user before tagging.
    ```
    git tag v<major>.<minor>.<patch>
    ```

@@ -1,0 +1,5 @@
+#!/bin/sh
+# Harness commit-msg hook. Validates the commit message against Conventional
+# Commits. Runs for every commit in this repo (any agent, or a human), because
+# the installer points git's core.hooksPath at .harness/githooks.
+exec node "$(dirname "$0")/commit-msg.mjs" "$1"
