@@ -1,4 +1,17 @@
 {
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "plansDirectory": "docs/plans",
+  "permissions": {
+    "deny": [
+      "Edit(docs/index.html)",
+      "Write(docs/index.html)",
+      "Edit(docs/plans/index.html)",
+      "Write(docs/plans/index.html)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {

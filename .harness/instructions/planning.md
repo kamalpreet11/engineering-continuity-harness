@@ -2,6 +2,8 @@
 
 Every task starts here. No project code changes before there is a plan.
 
+The Claude integration points `plansDirectory` at `docs/plans`, so your plan-mode draft lands there too. That draft is scratch. The durable plan is the `PLAN-<name>.html` file you create below — that is the one the index tracks and the one that locks.
+
 ## Making a plan
 
 1. Start in plan mode. Understand the request and the code around it.
