@@ -43,3 +43,8 @@ These rules are not optional. Hooks enforce the hard ones. Follow all of them.
 - Keep the subject under 72 characters, imperative, plain English. Add a body for context when it helps.
 - Zero AI fluff. Zero attributions. No "Co-Authored-By", no "Generated with", no tool credits. (Hook-enforced by the git commit-msg hook.)
 - Do not nag the user to commit. When work is done, remind them to review and commit when ready.
+
+## 8. Shell commands are tiered
+
+- Read-only commands run freely. State-changing commands (deletes, moves, commits, pushes, installs, infra changes) prompt the user first. Catastrophic ones (`rm -rf`, force-push, `git reset --hard`, `dd`, ...) are blocked. (Hook-enforced for every agent; see `.harness/instructions/commands.md`.)
+- This stops accidents, not a determined bypass. It is not a substitute for the agent's sandbox.

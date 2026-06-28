@@ -12,6 +12,7 @@ The short version:
 - Concepts, decisions, and specs in `docs/` describe the present only. No history, no changelog narration.
 - Never commit on main. Branch per plan. Rebase to main, tag releases.
 - Plain English everywhere. No AI fluff. No commit attributions.
+- Shell commands are tiered: reads run, writes ask, destructive ones are blocked.
 
-Detailed instructions are in `.harness/instructions/` (planning, knowledge, git, writing-style). Hooks enforce the hard rules — do not work around them.
+Detailed instructions are in `.harness/instructions/` (planning, knowledge, git, writing-style, commands). Hooks enforce the hard rules — do not work around them.
 <!-- continuity-harness:end -->

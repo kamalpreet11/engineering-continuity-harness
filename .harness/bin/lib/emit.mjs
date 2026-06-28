@@ -1,41 +1,45 @@
-// Per-tool block/allow output. Every supported agent honors exit code 2 as a
-// hard block; most also read a JSON decision on stdout. Each function prints the
-// tool's documented JSON and exits. Claude is verified; the others follow the
-// documented schemas and are marked untested in their adapters.
+// Per-tool decision output. Each function takes a { decision, reason } from the
+// shared rules and prints the tool's documented response, then exits. decision is
+// "deny" (block the action) or "ask" (prompt the user first). Claude is verified;
+// the others follow the documented schemas and are marked untested in their adapters.
 
-// Claude Code: PreToolUse permissionDecision. Verified.
-export function denyClaude(reason) {
+// Claude Code: PreToolUse permissionDecision ("deny" | "ask"). Verified.
+export function decideClaude({ decision, reason }) {
   process.stdout.write(JSON.stringify({
-    hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: reason },
+    hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: decision, permissionDecisionReason: reason },
   }));
   process.exit(0);
 }
 
-// Codex CLI: same PreToolUse schema as Claude (must use permissionDecision, not
-// the legacy {decision:"block"} which only injects a prompt). Untested.
-export function denyCodex(reason) {
+// Codex CLI: same PreToolUse schema as Claude (permissionDecision, not the legacy
+// {decision:"block"}). Untested.
+export function decideCodex({ decision, reason }) {
   process.stdout.write(JSON.stringify({
-    hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: reason },
+    hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: decision, permissionDecisionReason: reason },
   }));
   process.exit(0);
 }
 
-// Cursor: hook returns { permission: "deny", ... }. Untested.
-export function denyCursor(reason) {
+// Cursor: hook returns { permission: "deny" | "ask", ... }. Untested.
+export function decideCursor({ decision, reason }) {
   process.stdout.write(JSON.stringify({
-    permission: "deny",
+    permission: decision,
     agent_message: reason,
     user_message: reason,
   }));
   process.exit(0);
 }
 
-// Antigravity: Decide hook returns a decision; exit code 2 also blocks. Schema
-// not fully verifiable from rendered docs, so emit a superset and exit 2. Untested.
-export function denyAntigravity(reason) {
-  process.stdout.write(JSON.stringify({ permission: "deny", decision: "deny", reason }));
-  process.stderr.write(reason + "\n");
-  process.exit(2);
+// Antigravity: Decide hook returns a decision on stdout. A "deny" also exits 2,
+// which is documented to hard-block; "ask" exits 0 so the prompt can show. The
+// schema is the least-verifiable of the four, so emit a superset. Untested.
+export function decideAntigravity({ decision, reason }) {
+  process.stdout.write(JSON.stringify({ permission: decision, decision, reason }));
+  if (decision === "deny") {
+    process.stderr.write(reason + "\n");
+    process.exit(2);
+  }
+  process.exit(0);
 }
 
 export function pass() {
