@@ -20,6 +20,8 @@ The Claude integration starts every session in plan mode (`permissions.defaultMo
 4. Write the plan body in the HTML. Plain English. Cover the context (why), the approach, the files touched, and how to verify.
 5. Open the branch: `git checkout -b plan/<name>`.
 
+The visible status badge and the dates line in the body are **generated**, not hand-authored. They live between `<!-- harness:status:start -->` / `<!-- harness:status:end -->` and `<!-- harness:dates:start -->` / `<!-- harness:dates:end -->` markers, and `build-index.mjs` rewrites them from the frontmatter on every rebuild. Never edit them by hand and never remove the markers. Set the state and dates in the frontmatter; the rendered page follows.
+
 ## States
 
 A plan is always in exactly one state.
@@ -34,6 +36,8 @@ A plan is always in exactly one state.
 Setting the state to implemented, abandoned, or superseded is the **last edit you may make** to that file. After that the hook locks it.
 
 - The transition edit itself is allowed because the file on disk is still `created` at that moment.
+- Make the state flip **and its companion date field atomic** — change `state:` and add the matching date (`implemented:` / `abandoned:` / `superseded:`) and any required field (`abandoned_reason:`, `superseded_by:`) in the **same single edit**. Once the state on disk is no longer `created`, the file is locked and no follow-up frontmatter edit is possible.
+- You do not touch the body badge or dates line — they regenerate from the frontmatter you just set.
 - Once resolved, never touch it again. To revisit, open a new plan.
 
 ## The indexes

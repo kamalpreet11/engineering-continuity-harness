@@ -6,7 +6,7 @@
 // These pages are generated, never hand-edited. Run after any doc changes:
 //   node .harness/bin/build-index.mjs
 
-import { readdirSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { readFrontmatter, splitKeywords } from "./lib/frontmatter.mjs";
@@ -61,6 +61,46 @@ function stateBadge(state) {
 function debtBadge(debt) {
   if (!debt) return "";
   return `<span class="badge debt-${esc(debt)}">tech debt ${esc(debt)}</span>`;
+}
+
+// Build the dates line from whichever frontmatter date fields are present, e.g.
+// "Created 2026-06-28 · Implemented 2026-06-28".
+function datesLine(fm) {
+  const parts = [];
+  if (fm.created) parts.push(`Created ${esc(fm.created)}`);
+  if (fm.implemented) parts.push(`Implemented ${esc(fm.implemented)}`);
+  if (fm.abandoned) parts.push(`Abandoned ${esc(fm.abandoned)}`);
+  if (fm.superseded) parts.push(`Superseded ${esc(fm.superseded)}`);
+  return parts.join(" · ");
+}
+
+// Replace the content between a pair of harness:<name>:start/end markers, leaving
+// the markers themselves in place. A no-op when the markers are absent.
+function replaceRegion(html, name, inner) {
+  const re = new RegExp(`(<!--\\s*harness:${name}:start\\s*-->)[\\s\\S]*?(<!--\\s*harness:${name}:end\\s*-->)`);
+  return re.test(html) ? html.replace(re, `$1\n      ${inner}\n      $2`) : html;
+}
+
+// Rewrite each plan's visible status badge and dates line from its frontmatter, so
+// the rendered page can never drift from the locking field. This runs as plain Node
+// (not the Edit tool), so it can rewrite a locked plan's generated regions. Plans
+// without the markers are left untouched.
+function syncPlanBodies(plans) {
+  const dir = join(docsDir, "plans");
+  for (const r of plans) {
+    const abs = join(dir, r.file);
+    let html;
+    try {
+      html = readFileSync(abs, "utf8");
+    } catch {
+      continue;
+    }
+    const fm = readFrontmatter(abs) || {};
+    let next = html;
+    next = replaceRegion(next, "status", stateBadge(fm.state));
+    next = replaceRegion(next, "dates", `<div class="dates">${datesLine(fm)}</div>`);
+    if (next !== html) writeFileSync(abs, next);
+  }
 }
 
 const STYLE = `
@@ -246,6 +286,8 @@ function main() {
   if (!existsSync(docsDir)) mkdirSync(docsDir, { recursive: true });
   const data = {};
   for (const sec of SECTIONS) data[sec.type] = readSection(sec.dir);
+
+  syncPlanBodies(data.plans);
 
   writeFileSync(join(docsDir, "index.html"), buildHub(data));
 
