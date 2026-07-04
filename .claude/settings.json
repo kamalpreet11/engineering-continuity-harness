@@ -3,7 +3,6 @@
     "commit": "",
     "pr": ""
   },
-  "plansDirectory": "docs/plans",
   "permissions": {
     "defaultMode": "plan",
     "allow": [
