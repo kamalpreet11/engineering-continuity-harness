@@ -2,7 +2,8 @@
 type: plan
 name: fix-guard-cwd-and-atomic-writes
 created: 2026-07-03
-state: created
+implemented: 2026-07-03
+state: implemented
 description: Fix the guard's false "No active plan" errors by anchoring plan detection to the repo root and making index writes atomic.
 keywords: guard | plan-detection | cwd | repo-root | atomic-write | race | monorepo
 branch: plan/fix-guard-cwd-and-atomic-writes
@@ -44,14 +45,14 @@ branch: plan/fix-guard-cwd-and-atomic-writes
     <p class="desc">Anchor the PreToolUse guard to the repo root, and make index writes atomic, so it stops blocking legitimate edits.</p>
     <div class="badges">
       <!-- harness:status:start -->
-      <span class="badge state-created">created</span>
+      <span class="badge state-implemented">implemented</span>
       <!-- harness:status:end -->
       <span class="kw">guard</span>
       <span class="kw">cwd</span>
       <span class="kw">atomic-write</span>
     </div>
     <!-- harness:dates:start -->
-      <div class="dates">Created 2026-07-03</div>
+      <div class="dates">Created 2026-07-03 · Implemented 2026-07-03</div>
       <!-- harness:dates:end -->
   </div>
 
