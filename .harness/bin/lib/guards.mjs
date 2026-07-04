@@ -2,12 +2,11 @@
 // action and returns { decision, reason } when the action must be gated, or null
 // when it is allowed. decision is "deny" (block) or "ask" (prompt first). Per-tool
 // hook adapters parse their own payloads, call these, and emit their own format.
-// One place to change a rule, every tool follows.
 
 import { existsSync, readdirSync } from "node:fs";
 import { isAbsolute, join, relative, resolve } from "node:path";
 import { readFrontmatter } from "./frontmatter.mjs";
-import { currentBranch } from "./hook-io.mjs";
+import { currentBranch, repoRoot } from "./hook-io.mjs";
 import { classifyCommand } from "./commands.mjs";
 
 const deny = (reason) => ({ decision: "deny", reason });
@@ -16,14 +15,17 @@ const deny = (reason) => ({ decision: "deny", reason });
 // project work, so it never requires an active plan.
 const AGENT_DIRS = [".harness/", ".claude/", ".cursor/", ".codex/", ".agents/"];
 
-// Path relative to the project root, with forward slashes.
-export function toRel(filePath, cwd) {
+// Path relative to the project root, with forward slashes. A relative filePath is
+// resolved against the agent's cwd (that is what it is relative to), but the rel
+// used for classification is measured from the repo root, so a subdirectory cwd
+// never misclassifies project files, plans, or the generated indexes.
+export function toRel(filePath, cwd, root = repoRoot(cwd)) {
   const abs = isAbsolute(filePath) ? filePath : resolve(cwd, filePath);
-  return { abs, rel: relative(cwd, abs).split("\\").join("/") };
+  return { abs, rel: relative(root, abs).split("\\").join("/") };
 }
 
-function hasActivePlan(cwd, branch) {
-  const plansDir = join(cwd, "docs", "plans");
+function hasActivePlan(root, branch) {
+  const plansDir = join(root, "docs", "plans");
   if (!existsSync(plansDir)) return false;
   for (const file of readdirSync(plansDir)) {
     if (!/^PLAN-.+\.html$/.test(file)) continue;
@@ -38,7 +40,8 @@ function hasActivePlan(cwd, branch) {
 // Rule check for a file edit/write. filePath may be relative or absolute.
 export function checkEdit(filePath, cwd) {
   if (!filePath) return null;
-  const { abs, rel } = toRel(filePath, cwd);
+  const root = repoRoot(cwd);
+  const { abs, rel } = toRel(filePath, cwd, root);
   if (rel.startsWith("..")) return null; // outside the project
 
   const isPlanFile = /^docs\/plans\/PLAN-[^/]+\.html$/.test(rel);
@@ -64,7 +67,7 @@ export function checkEdit(filePath, cwd) {
   if (isPlanFile || isDocs || isAgentOrEngine) return null;
 
   // Project code requires an active plan on the current branch.
-  if (!hasActivePlan(cwd, currentBranch(cwd))) {
+  if (!hasActivePlan(root, currentBranch(cwd))) {
     return deny("No active plan for this branch. Start in plan mode: create a PLAN in docs/plans with state 'created' and a matching branch, then do the work. See .harness/instructions/planning.md.");
   }
   return null;

@@ -3,6 +3,7 @@
 // emit.mjs because it differs per tool.
 
 import { execFileSync } from "node:child_process";
+import { resolve } from "node:path";
 
 // Read all of stdin and parse it as JSON. Returns {} if anything goes wrong,
 // so a malformed payload never crashes a hook (which would block the agent).
@@ -33,5 +34,28 @@ export function currentBranch(cwd) {
     }).trim();
   } catch {
     return "";
+  }
+}
+
+// Repo root for a directory. The hook payload cwd follows the agent's shell, so
+// it may be a subdirectory (e.g. a monorepo package). Anchoring rule checks to
+// the true root keeps them correct wherever the agent is standing.
+//
+// We use --show-cdup (the relative path up to the root) and resolve it against
+// cwd, rather than --show-toplevel, so the root stays in the same path space as
+// cwd. --show-toplevel canonicalizes symlinks (e.g. /tmp -> /private/tmp on
+// macOS); mixing that with an agent-supplied path that isn't canonicalized would
+// make the file look like it sits outside the repo. Falls back to the given cwd
+// when git can't answer (not a repo), matching currentBranch.
+export function repoRoot(cwd) {
+  try {
+    const cdup = execFileSync("git", ["rev-parse", "--show-cdup"], {
+      cwd,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+    return resolve(cwd, cdup || ".");
+  } catch {
+    return cwd;
   }
 }

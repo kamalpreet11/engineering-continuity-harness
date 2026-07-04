@@ -6,10 +6,11 @@
 // These pages are generated, never hand-edited. Run after any doc changes:
 //   node .harness/bin/build-index.mjs
 
-import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { readdirSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { readFrontmatter, splitKeywords } from "./lib/frontmatter.mjs";
+import { writeFileAtomic } from "./lib/fs-atomic.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const projectRoot = resolve(here, "..", ".."); // .harness/bin -> project root
@@ -99,7 +100,7 @@ function syncPlanBodies(plans) {
     let next = html;
     next = replaceRegion(next, "status", stateBadge(fm.state));
     next = replaceRegion(next, "dates", `<div class="dates">${datesLine(fm)}</div>`);
-    if (next !== html) writeFileSync(abs, next);
+    if (next !== html) writeFileAtomic(abs, next);
   }
 }
 
@@ -289,11 +290,11 @@ function main() {
 
   syncPlanBodies(data.plans);
 
-  writeFileSync(join(docsDir, "index.html"), buildHub(data));
+  writeFileAtomic(join(docsDir, "index.html"), buildHub(data));
 
   const plansDir = join(docsDir, "plans");
   if (!existsSync(plansDir)) mkdirSync(plansDir, { recursive: true });
-  writeFileSync(join(plansDir, "index.html"), buildPlanNavigator(data.plans));
+  writeFileAtomic(join(plansDir, "index.html"), buildPlanNavigator(data.plans));
 
   const total = SECTIONS.reduce((n, s) => n + data[s.type].length, 0);
   console.log(`Rebuilt docs/index.html and docs/plans/index.html (${total} docs).`);
