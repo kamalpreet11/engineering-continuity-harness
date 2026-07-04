@@ -2,7 +2,6 @@
 // Claude Code PreToolUse guard. Wired for Edit, Write, and Bash.
 // Bash -> command rules (no commit/merge on main; deny destructive, ask before
 // writes). Edit/Write -> edit rules (locked plans, generated indexes, plan-first).
-// Verified.
 
 import { readInput } from "../../lib/hook-io.mjs";
 import { checkEdit, checkCommand } from "../../lib/guards.mjs";

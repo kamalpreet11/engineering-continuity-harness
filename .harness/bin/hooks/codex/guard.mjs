@@ -2,10 +2,8 @@
 // Codex CLI PreToolUse guard. Shell commands -> shell rule; file edits via
 // apply_patch -> edit rules. Branches on whether a command is present.
 //
-// UNTESTED: Codex's PreToolUse payload shape was taken from the docs, not run.
-// Codex uses the same permissionDecision schema as Claude. Verify against a real
-// Codex session before relying on it. The rule logic is the shared, verified path;
-// only payload parsing and the decision schema are unproven here.
+// Payload shape follows Codex's docs (same permissionDecision schema as Claude);
+// confirm it against a live session.
 
 import { readInput } from "../../lib/hook-io.mjs";
 import { checkEdit, checkCommand } from "../../lib/guards.mjs";

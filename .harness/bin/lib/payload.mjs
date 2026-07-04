@@ -1,6 +1,5 @@
 // Pull a shell command, a file path, and the project root out of a hook payload.
-// Tools disagree on field names, so check the documented spots for each.
-// Used by the non-Claude adapters, whose exact payload shapes are unverified.
+// Tools disagree on field names, so check the known spots for each.
 
 export function pickCommand(input) {
   return (

@@ -1,6 +1,5 @@
 // Parse the leading <!--HARNESS ... --> metadata block from a harness HTML doc.
-// The block is simple key: value YAML. We keep the parser tiny and dependency-free
-// on purpose: keys are flat, values are plain strings.
+// The block is simple key: value YAML: keys are flat, values are plain strings.
 
 import { readFileSync } from "node:fs";
 

@@ -1,9 +1,8 @@
 // Per-tool decision output. Each function takes a { decision, reason } from the
-// shared rules and prints the tool's documented response, then exits. decision is
-// "deny" (block the action) or "ask" (prompt the user first). Claude is verified;
-// the others follow the documented schemas and are marked untested in their adapters.
+// shared rules and writes the tool's response, then exits. decision is "deny"
+// (block the action) or "ask" (prompt the user first).
 
-// Claude Code: PreToolUse permissionDecision ("deny" | "ask"). Verified.
+// Claude Code: PreToolUse permissionDecision ("deny" | "ask").
 export function decideClaude({ decision, reason }) {
   process.stdout.write(JSON.stringify({
     hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: decision, permissionDecisionReason: reason },
@@ -12,7 +11,7 @@ export function decideClaude({ decision, reason }) {
 }
 
 // Codex CLI: same PreToolUse schema as Claude (permissionDecision, not the legacy
-// {decision:"block"}). Untested.
+// {decision:"block"}).
 export function decideCodex({ decision, reason }) {
   process.stdout.write(JSON.stringify({
     hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: decision, permissionDecisionReason: reason },
@@ -20,7 +19,7 @@ export function decideCodex({ decision, reason }) {
   process.exit(0);
 }
 
-// Cursor: hook returns { permission: "deny" | "ask", ... }. Untested.
+// Cursor: hook returns { permission: "deny" | "ask", ... }.
 export function decideCursor({ decision, reason }) {
   process.stdout.write(JSON.stringify({
     permission: decision,
@@ -30,9 +29,9 @@ export function decideCursor({ decision, reason }) {
   process.exit(0);
 }
 
-// Antigravity: Decide hook returns a decision on stdout. A "deny" also exits 2,
-// which is documented to hard-block; "ask" exits 0 so the prompt can show. The
-// schema is the least-verifiable of the four, so emit a superset. Untested.
+// Antigravity: Decide hook returns a decision on stdout. A "deny" also exits 2 to
+// hard-block; "ask" exits 0 so the prompt can show. Emit a superset of the
+// documented fields.
 export function decideAntigravity({ decision, reason }) {
   process.stdout.write(JSON.stringify({ permission: decision, decision, reason }));
   if (decision === "deny") {

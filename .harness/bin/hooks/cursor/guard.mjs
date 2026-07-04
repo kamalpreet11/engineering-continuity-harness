@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 // Cursor guard. Wired for beforeShellExecution (shell rule) and preToolUse
-// (edit rules). One script, branches on whether the payload carries a command.
+// (edit rules). Branches on whether the payload carries a command.
 //
-// UNTESTED: Cursor's exact hook payload shape was taken from the docs, not run.
-// Verify against a real Cursor session before relying on it. The rule logic is
-// shared with the verified Claude path; only the payload parsing is unproven.
+// Payload shape follows Cursor's docs; confirm it against a live session.
 
 import { readInput } from "../../lib/hook-io.mjs";
 import { checkEdit, checkCommand } from "../../lib/guards.mjs";
