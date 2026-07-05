@@ -26,6 +26,32 @@ Per-agent folders like `.claude/` are thin pointers. They hold nothing but a lin
 
 ```
 cd your-project
-npx continuity-harness init      # add the engine, create docs/
-npx continuity-harness update    # later: refresh the engine, keep your docs
+npx continuity-harness init claude        # add the engine, wire an agent, create docs/
+npx continuity-harness update             # later: refresh the engine, keep your docs
+npx continuity-harness uninstall claude   # remove the wiring, keep the engine and docs
 ```
+
+Name one or more agents on `init`: `claude`, `cursor`, `codex`, `antigravity`.
+`update` re-wires the agents you recorded at install time; `uninstall` takes the
+same agent names (or all of them if you name none).
+
+The harness is a guest in every file it touches. It **merges** its wiring into
+your agent's own config rather than handing you a sidecar to stitch by hand:
+
+- `.claude/settings.json` (and the Cursor/Codex/Antigravity equivalents) — the
+  harness adds only its own hooks and permission tiers and leaves everything else,
+  including hooks another tool (say, graphify) installed, exactly as it found them.
+  A config file that is not valid JSON is backed up to `*.bak` and skipped, never
+  overwritten.
+- `CLAUDE.md` / `AGENTS.md` — a single marked block, replaced in place on update.
+- The git `commit-msg` check goes into whatever hooks directory git already uses
+  (honoring an existing `core.hooksPath` from Husky, graphify, or your own setup),
+  appended alongside any hook already there. The harness no longer takes over
+  `core.hooksPath`.
+
+`update` is idempotent: anything already applied is reported as `unchanged` and
+left untouched. If another tool ever strips the harness wiring out, the next
+session restores it automatically (the SessionStart hook self-heals).
+
+Git config is per-clone, so run `update` once in each fresh clone to wire its
+hooks.

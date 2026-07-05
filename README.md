@@ -99,7 +99,7 @@ Wire several at once if you switch tools:
 continuity-harness init claude cursor codex
 ```
 
-This copies `.harness/` into your project, creates the empty `docs/` directories, writes each named agent's instructions file and hooks config, records what it installed in `.continuity-harness.json`, and builds the starter index pages. It refuses to overwrite a file you already own — if you already have a `CLAUDE.md`, `AGENTS.md`, or a hooks config, it writes a `*.harness` copy beside it and asks you to merge the `hooks` block.
+This copies `.harness/` into your project, creates the empty `docs/` directories, wires each named agent's instructions file and hooks config, records what it installed in `.continuity-harness.json`, and builds the starter index pages. It never overwrites a file you own: it **merges** its own hooks and permission tiers into your existing `CLAUDE.md`, `AGENTS.md`, or agent config and leaves everything else — your own settings and anything another tool installed — exactly as it found them. A config file that is not valid JSON is backed up to `*.bak` and skipped rather than clobbered. The git `commit-msg` check is appended into whatever hooks directory git already uses, alongside any hook already there.
 
 ### 4. Restart the agent in your project
 
@@ -116,7 +116,15 @@ continuity-harness update          # re-wires whatever you installed before
 continuity-harness update cursor   # also add a new agent later
 ```
 
-`update` re-copies only `.harness/` and the agent integration files. Your `docs/` — plans, concepts, decisions, specs — are never touched. Unchanged config files are left alone; only genuinely new wiring is parked for you to merge.
+`update` re-copies only `.harness/` and re-merges the agent integration files. Your `docs/` — plans, concepts, decisions, specs — are never touched. It is idempotent: a config that already has the current wiring is reported as `unchanged` and left byte-for-byte alone; only genuinely new wiring is merged in.
+
+Remove the wiring later without losing the engine or your docs:
+
+```
+continuity-harness uninstall claude   # or name no agent to remove all recorded ones
+```
+
+`uninstall` strips only the harness's own hooks, permission entries, instruction blocks, and the `commit-msg` check, leaving your own settings and any other tool's wiring intact. If some tool ever strips the harness out from under you, the next agent session restores it automatically.
 
 ## Day-to-day use
 
