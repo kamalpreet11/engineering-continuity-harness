@@ -8,6 +8,8 @@ import { isAbsolute, join, relative, resolve } from "node:path";
 import { readFrontmatter } from "./frontmatter.mjs";
 import { currentBranch, repoRoot } from "./hook-io.mjs";
 import { classifyCommand } from "./commands.mjs";
+import { nextFrontmatter } from "./edit-preview.mjs";
+import { checkResolution, isSupersededDecision } from "./resolution.mjs";
 
 const deny = (reason) => ({ decision: "deny", reason });
 
@@ -37,14 +39,17 @@ function hasActivePlan(root, branch) {
   return false;
 }
 
-// Rule check for a file edit/write. filePath may be relative or absolute.
-export function checkEdit(filePath, cwd) {
+// Rule check for a file edit/write. filePath may be relative or absolute. edit is
+// the proposed change from pickEdit in payload.mjs; without it the resolution rules
+// cannot see what the plan is about to say, and every other rule still applies.
+export function checkEdit(filePath, cwd, edit) {
   if (!filePath) return null;
   const root = repoRoot(cwd);
   const { abs, rel } = toRel(filePath, cwd, root);
   if (rel.startsWith("..")) return null; // outside the project
 
   const isPlanFile = /^docs\/plans\/PLAN-[^/]+\.html$/.test(rel);
+  const isDecisionFile = /^docs\/decisions\/[^/]+\.html$/.test(rel) && rel !== "docs/decisions/index.html";
   const isGeneratedIndex = rel === "docs/index.html" || rel === "docs/plans/index.html";
   const isDocs = rel.startsWith("docs/");
   const isAgentOrEngine = AGENT_DIRS.some((d) => rel.startsWith(d));
@@ -54,13 +59,21 @@ export function checkEdit(filePath, cwd) {
     return deny("docs/index.html and docs/plans/index.html are generated. Do not edit them by hand. Change a doc and the index rebuilds itself.");
   }
 
-  // A resolved plan is locked forever; a created plan (incl. resolving it) is fine.
+  // A resolved plan is locked forever; a created plan is editable. Resolving one is
+  // its last edit, so that edit must carry everything the resolution needs.
   if (isPlanFile && existsSync(abs)) {
-    const state = ((readFrontmatter(abs) || {}).state || "").trim();
+    const diskFm = readFrontmatter(abs) || {};
+    const state = (diskFm.state || "").trim();
     if (state && state !== "created") {
       return deny(`This plan is ${state} and is locked forever. To revisit it, open a new plan instead of editing this one.`);
     }
-    return null;
+    const nextFm = nextFrontmatter(abs, diskFm, edit);
+    return nextFm ? checkResolution({ nextFm, root }) : null;
+  }
+
+  // A decision that a newer decision has replaced is final, same as a plan.
+  if (isDecisionFile && existsSync(abs) && isSupersededDecision(root, rel)) {
+    return deny("This decision has been replaced by a newer one and is locked. Write the current decision in the new file instead. See .harness/instructions/knowledge.md.");
   }
 
   // New plans, knowledge docs, and the engine/agent config are all allowed.

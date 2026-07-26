@@ -1,19 +1,21 @@
 #!/usr/bin/env node
 // Claude Code PreToolUse guard. Wired for Edit, Write, and Bash.
 // Bash -> command rules (no commit/merge on main; deny destructive, ask before
-// writes). Edit/Write -> edit rules (locked plans, generated indexes, plan-first).
+// writes). Edit/Write -> edit rules (locked plans, what resolving a plan must
+// carry, locked decisions, generated indexes, plan-first).
 
 import { readInput } from "../../lib/hook-io.mjs";
 import { checkEdit, checkCommand } from "../../lib/guards.mjs";
+import { pickCommand, pickFilePath, pickCwd, pickEdit } from "../../lib/payload.mjs";
 import { decideClaude, pass } from "../../lib/emit.mjs";
 
 const input = await readInput();
-const cwd = input.cwd || process.cwd();
+const cwd = pickCwd(input);
 
 const result =
   input.tool_name === "Bash"
-    ? checkCommand(input.tool_input?.command, cwd)
-    : checkEdit(input.tool_input?.file_path, cwd);
+    ? checkCommand(pickCommand(input), cwd)
+    : checkEdit(pickFilePath(input), cwd, pickEdit(input));
 
 if (result) decideClaude(result);
 pass();

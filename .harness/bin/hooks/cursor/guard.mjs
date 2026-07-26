@@ -6,14 +6,14 @@
 
 import { readInput } from "../../lib/hook-io.mjs";
 import { checkEdit, checkCommand } from "../../lib/guards.mjs";
-import { pickCommand, pickFilePath, pickCwd } from "../../lib/payload.mjs";
+import { pickCommand, pickFilePath, pickCwd, pickEdit } from "../../lib/payload.mjs";
 import { decideCursor, pass } from "../../lib/emit.mjs";
 
 const input = await readInput();
 const cwd = pickCwd(input);
 const command = pickCommand(input);
 
-const result = command ? checkCommand(command, cwd) : checkEdit(pickFilePath(input), cwd);
+const result = command ? checkCommand(command, cwd) : checkEdit(pickFilePath(input), cwd, pickEdit(input));
 
 if (result) decideCursor(result);
 pass();

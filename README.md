@@ -39,7 +39,9 @@ docs/               your knowledge (generated + authored)
 The rules are one shared library. Each agent's hooks call into it, so every tool enforces the same thing:
 
 - **Plan first.** No project code changes without an active plan on a matching `plan/<name>` branch.
-- **Plans lock once resolved.** A plan marked implemented, abandoned, or superseded can never be edited again.
+- **Plans lock once resolved.** A plan marked implemented, abandoned, or superseded can never be edited again, and resolving one must carry its date, its reason, or its replacement link.
+- **A finished plan accounts for what it taught the project.** A plan can't be marked implemented until its `knowledge:` field names the concepts, decisions, and specs the work produced — files that must actually exist — or says `none` with a reason in plain English. This is what keeps `docs/concepts`, `docs/decisions`, and `docs/specs` filling up as the software gets built instead of staying empty.
+- **A replaced decision is locked.** Once a newer decision supersedes it, the old one is read-only.
 - **Indexes are generated.** `docs/index.html` and `docs/plans/index.html` rebuild themselves and can't be hand-edited.
 - **Never work on main.** No commits or merges on the main branch. Work lands on main by rebase, then a release tag.
 
