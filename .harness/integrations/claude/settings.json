@@ -60,9 +60,7 @@
       "Bash(find * -delete)",
       "Bash(find * -exec rm *)",
       "Edit(docs/index.html)",
-      "Write(docs/index.html)",
-      "Edit(docs/plans/index.html)",
-      "Write(docs/plans/index.html)"
+      "Edit(docs/plans/index.html)"
     ]
   },
   "hooks": {
