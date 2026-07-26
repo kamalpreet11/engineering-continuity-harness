@@ -1,0 +1,116 @@
+<!--HARNESS
+type: concept
+name: document-lifecycle
+created: 2026-07-25
+description: How a plan and a decision reach their final state, and what the harness demands at that moment.
+keywords: lifecycle | plan | state | resolution | lock | knowledge | decision | frontmatter
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concept — document lifecycle</title>
+<style>
+  :root { --ink:#1a1a1a; --muted:#666; --line:#e3e3e3; --bg:#fafafa; --accent:#2563eb; }
+  * { box-sizing: border-box; }
+  body { font: 16px/1.6 -apple-system, system-ui, Segoe UI, Roboto, sans-serif; color: var(--ink); background: var(--bg); margin: 0; }
+  main { max-width: 820px; margin: 0 auto; padding: 48px 24px 96px; }
+  .meta { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 20px 24px; margin-bottom: 32px; }
+  .meta h1 { margin: 0 0 6px; font-size: 26px; }
+  .meta .desc { color: var(--muted); margin: 0 0 16px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .badge { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: .03em; background: #ede9fe; color: #5b21b6; }
+  .kw { background: #f1f1f1; color: #444; font-size: 12px; padding: 3px 8px; border-radius: 6px; }
+  .dates { color: var(--muted); font-size: 13px; margin-top: 12px; }
+  h2 { font-size: 19px; margin-top: 36px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  h3 { font-size: 16px; margin-top: 24px; }
+  a { color: var(--accent); }
+  code { background: #f1f1f1; padding: 1px 5px; border-radius: 4px; font-size: 14px; }
+  pre { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-size: 14px; }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { text-align: left; border-bottom: 1px solid var(--line); padding: 8px 10px; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  .back { display: inline-block; margin-bottom: 24px; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="../index.html">&larr; All knowledge</a>
+
+  <div class="meta">
+    <h1>document lifecycle</h1>
+    <p class="desc">How a plan and a decision reach their final state, and what the harness demands at that moment.</p>
+    <div class="badges">
+      <span class="badge">concept</span>
+      <span class="kw">lifecycle</span>
+      <span class="kw">resolution</span>
+      <span class="kw">lock</span>
+      <span class="kw">knowledge</span>
+    </div>
+    <div class="dates">Current as of 2026-07-25</div>
+  </div>
+
+  <p>Two kinds of harness document have a life that ends: a plan, and a decision. Everything else in <code>docs/</code> is simply kept current. This concept covers how those two reach their end, and why the ending is the place the harness asks for something.</p>
+
+  <h2>A plan's states</h2>
+
+  <p>A plan's <code>state:</code> is one of four values, and only the first is editable.</p>
+
+  <table>
+    <tr><th>State</th><th>Meaning</th></tr>
+    <tr><td><code>created</code></td><td>Live work. The plan can be edited freely.</td></tr>
+    <tr><td><code>implemented</code></td><td>The work is done and verified. Locked.</td></tr>
+    <tr><td><code>abandoned</code></td><td>The work was dropped. Locked.</td></tr>
+    <tr><td><code>superseded</code></td><td>A newer plan replaced it. Locked.</td></tr>
+  </table>
+
+  <p>The three ending states are collectively a <em>resolution</em>. Reaching one is a one-way door: the guard refuses every later edit to that file, so a plan is a record of intent that cannot be quietly rewritten after the fact.</p>
+
+  <h2>Why the resolution edit is the enforcement point</h2>
+
+  <p>Because the file locks the instant its state stops being <code>created</code>, the edit that resolves a plan is the last edit it will ever receive. Anything the resolution requires has to arrive in that same edit — there is no second chance to add a missing date afterwards.</p>
+
+  <p>That makes it the one moment every piece of work must pass through, which is why the harness collects its dues there:</p>
+
+  <table>
+    <tr><th>Resolving to</th><th>The edit must carry</th></tr>
+    <tr><td><code>implemented</code></td><td><code>implemented:</code> date, and a <code>knowledge:</code> accounting</td></tr>
+    <tr><td><code>abandoned</code></td><td><code>abandoned:</code> date and <code>abandoned_reason:</code></td></tr>
+    <tr><td><code>superseded</code></td><td><code>superseded:</code> date and <code>superseded_by:</code></td></tr>
+  </table>
+
+  <h3>The knowledge accounting</h3>
+
+  <p>A plan cannot claim to be implemented without saying what the work taught the project. Its <code>knowledge:</code> field names the concepts, decisions, and specs the work produced, as paths under <code>docs/</code> separated by <code>|</code>:</p>
+
+<pre><code>knowledge: concepts/auth-flow.html | decisions/token-storage.html</code></pre>
+
+  <p>Every named file must exist, so the document is written before the plan can close. Work that genuinely produced no knowledge says so and says why:</p>
+
+<pre><code>knowledge: none
+knowledge_reason: dependency version bump only, no behavior or pattern changed</code></pre>
+
+  <p>The check is deliberately shallow: it confirms the plan accounted for its knowledge and that the files are real. It cannot judge whether a document is any good, and it does not try. It is a forcing function, not a reviewer — the judgement of what counts as a concept, a decision, or a spec belongs to the agent, and the instructions carry it.</p>
+
+  <h2>A decision's ending</h2>
+
+  <p>A decision has no state field. It ends when a newer decision replaces it: the new file names the old one in <code>supersedes:</code>, and from that moment the old file is read-only.</p>
+
+  <p>The lock reads the replacement, not the original, because a superseded decision stays exactly as it was written — nothing edits it to mark it dead. So the guard looks two ways: another decision whose <code>supersedes:</code> names this file, or a <code>superseded_by:</code> line on the file itself. Either one locks it.</p>
+
+  <p>The edit that creates the replacement is unaffected, and so is an edit that adds <code>superseded_by:</code> to the old file, because the marker is not on disk yet when the guard runs. That is the same idiom the plan lock uses: the transition is allowed, everything after it is not.</p>
+
+  <h2>How the guard sees a change before it happens</h2>
+
+  <p>A rule about the state a file is <em>about to</em> have cannot be checked against the file on disk. So the guard reconstructs the outcome first: <code>edit-preview.mjs</code> replays the proposed edit in memory — a whole-file write is the new content, a targeted edit is the substitution applied to the current file — and parses the settings block of the result. <code>resolution.mjs</code> then judges that block.</p>
+
+  <p>When an edit cannot be replayed, because the payload came from a tool whose shape we do not recognize, the preview falls back to scanning the payload for a settings-block-shaped <code>state:</code> line and merging the known keys it finds over the block on disk. The fallback reads lines out of context and is honest about it in its comments; the exact path covers the write and edit shapes Claude sends.</p>
+
+  <h2>Why it is shaped this way</h2>
+
+  <p>The knowledge directories existed long before anything asked for them, and they stayed empty. A rule nobody is ever stopped by is a suggestion. Putting the demand at the resolution edit means the cost of documenting lands on the person who just did the work and still has it in their head, which is the only time the document is cheap to write and accurate.</p>
+</main>
+</body>
+</html>

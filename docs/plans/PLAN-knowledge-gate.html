@@ -1,0 +1,121 @@
+<!--HARNESS
+type: plan
+name: knowledge-gate
+created: 2026-07-25
+state: implemented
+implemented: 2026-07-25
+description: Refuse to mark a plan implemented until it accounts for the concepts, decisions, and specs it produced, and enforce the resolution fields the rules already promise.
+keywords: knowledge | concepts | decisions | specs | gate | resolution | lock | frontmatter
+branch: plan/knowledge-gate
+knowledge: concepts/document-lifecycle.html | decisions/knowledge-accounting.html
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan — knowledge gate</title>
+<style>
+  :root { --ink:#1a1a1a; --muted:#666; --line:#e3e3e3; --bg:#fafafa; --accent:#2563eb; }
+  * { box-sizing: border-box; }
+  body { font: 16px/1.6 -apple-system, system-ui, Segoe UI, Roboto, sans-serif; color: var(--ink); background: var(--bg); margin: 0; }
+  main { max-width: 820px; margin: 0 auto; padding: 48px 24px 96px; }
+  .meta { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 20px 24px; margin-bottom: 32px; }
+  .meta h1 { margin: 0 0 6px; font-size: 26px; }
+  .meta .desc { color: var(--muted); margin: 0 0 16px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .badge { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: .03em; }
+  .state-created { background: #dbeafe; color: #1e40af; }
+  .state-implemented { background: #dcfce7; color: #166534; }
+  .state-abandoned { background: #fee2e2; color: #991b1b; }
+  .state-superseded { background: #fef3c7; color: #92400e; }
+  .kw { background: #f1f1f1; color: #444; font-size: 12px; padding: 3px 8px; border-radius: 6px; }
+  .dates { color: var(--muted); font-size: 13px; margin-top: 12px; }
+  h2 { font-size: 19px; margin-top: 36px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  a { color: var(--accent); }
+  code { background: #f1f1f1; padding: 1px 5px; border-radius: 4px; font-size: 14px; }
+  pre { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-size: 14px; }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { text-align: left; border-bottom: 1px solid var(--line); padding: 8px 10px; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  .back { display: inline-block; margin-bottom: 24px; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./index.html">&larr; All plans</a>
+
+  <div class="meta">
+    <h1>knowledge-gate — make the knowledge base mandatory</h1>
+    <p class="desc">Refuse to mark a plan implemented until it accounts for the concepts, decisions, and specs it produced, and enforce the resolution fields the rules already promise.</p>
+    <div class="badges">
+      <!-- harness:status:start -->
+      <span class="badge state-implemented">implemented</span>
+      <!-- harness:status:end -->
+      <span class="kw">knowledge</span>
+      <span class="kw">concepts</span>
+      <span class="kw">decisions</span>
+      <span class="kw">specs</span>
+      <span class="kw">gate</span>
+      <span class="kw">resolution</span>
+      <span class="kw">lock</span>
+      <span class="kw">frontmatter</span>
+    </div>
+    <!-- harness:dates:start -->
+      <div class="dates">Created 2026-07-25 · Implemented 2026-07-25</div>
+      <!-- harness:dates:end -->
+  </div>
+
+  <h2>Context</h2>
+  <p>The harness creates <code>docs/concepts/</code>, <code>docs/decisions/</code>, and <code>docs/specs/</code> at install time, ships a template for each, and renders them on the hub page. Nothing ever asks for them. No hook, no rule, and no instruction says when one is owed, so in practice they stay empty — including in this repo, after five shipped plans.</p>
+  <p>Those directories exist so the knowledge base grows as the software gets built. Optional means never. This plan puts the demand at the one moment every piece of work must pass through: the flip to <code>state: implemented</code>.</p>
+  <p>Two rules the documents already promise but nothing checks get closed by the same code. <code>RULES.md</code> says an abandoned plan must record a reason and a superseded plan must link its replacement. <code>knowledge.md</code> says a decision locks the moment a newer decision replaces it, when in fact only plan files lock.</p>
+
+  <h2>Approach</h2>
+  <p>A hook sees a file path and a proposed edit. It cannot read the session, so it can never decide on its own that the work invented a new concept. The enforcement therefore splits in two.</p>
+  <p>The instructions carry the judgement: <code>knowledge.md</code> defines when something counts as a concept, a decision, or a spec, and <code>RULES.md</code> — injected into every session — carries the rule itself. The hook carries the refusal: when a plan flips to a resolved state, its settings block must account for its knowledge with paths that exist on disk. The hook never judges whether a document is any good, only that the plan accounted for it. It is a forcing function, not a reviewer.</p>
+
+  <h3>Frontmatter contract</h3>
+  <p>Two new plan fields, checked only when a plan flips to <code>implemented</code>:</p>
+<pre><code>knowledge: concepts/auth-flow.html | decisions/token-storage.html</code></pre>
+  <p>Pipe-separated, the same style as <code>keywords</code>. Paths are relative to <code>docs/</code>; a leading <code>docs/</code> is tolerated. Every entry must sit under <code>concepts/</code>, <code>decisions/</code>, or <code>specs/</code>, and must exist.</p>
+<pre><code>knowledge: none
+knowledge_reason: dependency version bump only, no behavior or pattern changed</code></pre>
+  <p><code>none</code> is the escape hatch and requires a reason in plain English, the same way an abandoned plan requires one. Skipping stays possible; it never becomes silent.</p>
+  <p>Abandoned and superseded plans shipped nothing into the project, so they owe the knowledge base nothing.</p>
+
+  <h3>Resolution fields</h3>
+  <p>Every flip out of <code>created</code> must carry its companion fields:</p>
+  <table>
+    <tr><th>Resulting state</th><th>Required</th></tr>
+    <tr><td><code>implemented</code></td><td><code>implemented:</code> date, plus the knowledge accounting above</td></tr>
+    <tr><td><code>abandoned</code></td><td><code>abandoned:</code> date and <code>abandoned_reason:</code></td></tr>
+    <tr><td><code>superseded</code></td><td><code>superseded:</code> date and <code>superseded_by:</code></td></tr>
+  </table>
+
+  <h3>Decision lock</h3>
+  <p>A decision file becomes read-only once a newer decision replaces it. Because <code>knowledge.md</code> says the old file stays exactly as it was, the lock reads two signals: another file in <code>docs/decisions/</code> carrying <code>supersedes:</code> that names this one, or a <code>superseded_by:</code> line on the file itself. The edit that writes the replacement is unaffected, and the edit that adds <code>superseded_by:</code> to the old file still passes, because the marker is not on disk when the check runs. That is the same idiom the plan lock already uses.</p>
+
+  <h3>Where the code goes</h3>
+  <p><code>guards.mjs</code> stays the dispatcher it is today. The new logic lands in two small modules beside it: <code>edit-preview.mjs</code> works out what a file will contain after a proposed edit, and <code>resolution.mjs</code> holds the rules as a pure function over two settings blocks. <code>payload.mjs</code> gains <code>pickEdit</code> so all four agents hand the guard the same shape. Where an edit cannot be simulated exactly — an unfamiliar payload, or a patch format — the guard falls back to scanning the payload for a settings-block-shaped <code>state:</code> line and merging what it finds over the file on disk.</p>
+
+  <h2>Files</h2>
+  <p>New: <code>.harness/bin/lib/edit-preview.mjs</code>, <code>.harness/bin/lib/resolution.mjs</code>.</p>
+  <p>Changed: <code>.harness/bin/lib/guards.mjs</code>, <code>.harness/bin/lib/payload.mjs</code>, the four guards under <code>.harness/bin/hooks/</code>, <code>.harness/rules/RULES.md</code>, <code>.harness/instructions/knowledge.md</code>, <code>.harness/instructions/planning.md</code>, <code>.harness/templates/PLAN.template.html</code>, <code>.harness/integrations/_shared/instructions-block.md</code>, <code>CLAUDE.md</code>, <code>README.md</code>, <code>package.json</code>.</p>
+
+  <h2>Verification</h2>
+  <p>A driver outside the repo pipes crafted payloads into <code>.harness/bin/hooks/claude/guard.mjs</code>, the real entry point, and asserts each decision: a flip with no <code>knowledge:</code> is refused; <code>none</code> without a reason is refused; <code>none</code> with a reason passes; a missing or misplaced path is refused and named; a real path passes; each resolution missing its date or reason is refused; an ordinary edit to a live plan passes; a replaced decision is read-only while an unreplaced one is not; and a whole-file write reaches the same verdict as the equivalent fragment edit.</p>
+  <p>The four existing rules must be untouched: no code edit without an active plan, no writing the generated indexes, no editing a resolved plan, no commit on main.</p>
+  <p>Then the real test. This plan is the first thing the new gate judges: resolving it before its documents exist must fail, and succeed once they do.</p>
+
+  <h2>Knowledge</h2>
+  <p>This work produced two documents, both named in this plan's <code>knowledge:</code> field.</p>
+  <ul>
+    <li><a href="../concepts/document-lifecycle.html">concepts/document-lifecycle.html</a> — how a plan and a decision reach their final state, and what the harness demands at that moment.</li>
+    <li><a href="../decisions/knowledge-accounting.html">decisions/knowledge-accounting.html</a> — accounting is a declaration of paths that must exist, not proof from a branch diff.</li>
+  </ul>
+  <p>No spec: the work followed the shape the engine already had, pure rule modules behind per-tool adapters, rather than establishing a new pattern.</p>
+</main>
+</body>
+</html>

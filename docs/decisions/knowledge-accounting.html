@@ -1,0 +1,83 @@
+<!--HARNESS
+type: decision
+name: knowledge-accounting
+created: 2026-07-25
+description: A plan accounts for its knowledge by declaring paths that must exist, not by proving the files changed on its branch.
+keywords: knowledge | declaration | git | diff | gate | plan | resolution | escape hatch
+tech_debt: cleared
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decision — knowledge accounting</title>
+<style>
+  :root { --ink:#1a1a1a; --muted:#666; --line:#e3e3e3; --bg:#fafafa; --accent:#2563eb; }
+  * { box-sizing: border-box; }
+  body { font: 16px/1.6 -apple-system, system-ui, Segoe UI, Roboto, sans-serif; color: var(--ink); background: var(--bg); margin: 0; }
+  main { max-width: 820px; margin: 0 auto; padding: 48px 24px 96px; }
+  .meta { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 20px 24px; margin-bottom: 32px; }
+  .meta h1 { margin: 0 0 6px; font-size: 26px; }
+  .meta .desc { color: var(--muted); margin: 0 0 16px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .badge { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: .03em; background: #dbeafe; color: #1e40af; }
+  .debt { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: .03em; background: #dcfce7; color: #166534; }
+  .kw { background: #f1f1f1; color: #444; font-size: 12px; padding: 3px 8px; border-radius: 6px; }
+  .dates { color: var(--muted); font-size: 13px; margin-top: 12px; }
+  h2 { font-size: 19px; margin-top: 36px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  a { color: var(--accent); }
+  code { background: #f1f1f1; padding: 1px 5px; border-radius: 4px; font-size: 14px; }
+  pre { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-size: 14px; }
+  pre code { background: none; padding: 0; }
+  .back { display: inline-block; margin-bottom: 24px; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="../index.html">&larr; All knowledge</a>
+
+  <div class="meta">
+    <h1>knowledge accounting is a declaration, not a diff</h1>
+    <p class="desc">A plan accounts for its knowledge by declaring paths that must exist, not by proving the files changed on its branch.</p>
+    <div class="badges">
+      <span class="badge">decision</span>
+      <span class="debt">tech debt cleared</span>
+      <span class="kw">knowledge</span>
+      <span class="kw">declaration</span>
+      <span class="kw">gate</span>
+    </div>
+    <div class="dates">Current as of 2026-07-25</div>
+  </div>
+
+  <h2>The decision</h2>
+
+  <p>A plan accounts for the knowledge it produced by naming it in a <code>knowledge:</code> field. The guard checks two things and nothing more: every named entry is a <code>concepts/</code>, <code>decisions/</code>, or <code>specs/</code> file, and every named file exists under <code>docs/</code>.</p>
+
+  <p>The guard does not consult git. It does not ask whether the named document was created or modified during this plan's work, and it does not require any file under the knowledge directories to appear in the branch's diff.</p>
+
+  <p>Work that produced no knowledge uses an explicit escape hatch with a written justification:</p>
+
+<pre><code>knowledge: none
+knowledge_reason: dependency version bump only, no behavior or pattern changed</code></pre>
+
+  <p><code>none</code> on its own is refused. The reason is mandatory, in the same way an abandoned plan must record why it was dropped.</p>
+
+  <h2>What this rules out</h2>
+
+  <p>The rejected alternative was proof by diff: compare the branch against main and require that at least one file under <code>docs/concepts</code>, <code>docs/decisions</code>, or <code>docs/specs</code> actually changed. That is a stronger claim — a declaration can point at a document written months ago and satisfy the check, while a diff cannot be fooled that way.</p>
+
+  <p>It was rejected because the extra strength is narrow and the cost is broad. A diff check needs a merge base, which means it needs to know the trunk's name, that the trunk exists locally, that the branch is not detached, and that git can answer at all. Every one of those is an environment in which the check either fails open or refuses honest work for reasons that have nothing to do with knowledge. The existing rules only ever ask git for the current branch name, and they treat a silent git as "not a repo" rather than as an error. Making the knowledge gate the first rule with a hard dependency on repository topology would be the most fragile thing in the engine.</p>
+
+  <p>The narrower point: the gate's job is to make skipping the knowledge base impossible to do silently, not to be unfoolable. An agent that points <code>knowledge:</code> at an unrelated old document has written a false statement into a file that locks forever and sits on the hub page under the plan's name. That is a visible lie, which is the level of accountability this harness is built on everywhere else — the commit hook cannot tell whether a commit message is true either.</p>
+
+  <h2>What follows from it</h2>
+
+  <p>Documents are written before the plan resolves, never after, because the path has to exist for the flip to be allowed. The ordering is deliberate: the knowledge lands while the work is still fresh.</p>
+
+  <p>Because the check is shallow, the instructions carry the weight. <code>.harness/instructions/knowledge.md</code> defines when a concept, a decision, or a spec is owed, and <code>.harness/rules/RULES.md</code> — injected into every session — carries the rule itself. Weakening those documents weakens the gate far more than any change to the guard would.</p>
+
+  <p>Updating an existing document counts as knowledge, and is listed the same way. That falls out of the design rather than being a special case, and it is the correct behavior: work that changed how a documented thing behaves owes a rewrite of that document, not a new one.</p>
+</main>
+</body>
+</html>
